@@ -1,0 +1,19 @@
+timezone: America/New_York
+
+database_path: data/context.db
+export_dir: exports
+
+telegram:
+  session_name: telegram_context_sync
+  request_limit: 1000
+
+markdown:
+  max_messages_per_file: 500
+  include_sender: true
+  include_source_identifier: true
+
+chats:
+  - name: example_project_group
+    identifier: "example_public_username_or_chat_id"
+    enabled: true
+    export_file: "example_project_group.md"
