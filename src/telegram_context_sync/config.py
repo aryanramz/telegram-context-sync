@@ -34,12 +34,23 @@ class MarkdownConfig:
 
 
 @dataclass(frozen=True)
+class GoogleConfig:
+    enabled: bool = False
+    credentials_path: Path = Path("credentials/client_secret.json")
+    token_path: Path = Path("token.json")
+    document_id: str | None = None
+    document_title: str = "Telegram Context Sync - Project Context"
+
+
+@dataclass(frozen=True)
 class AppConfig:
     timezone: str = "America/New_York"
     database_path: Path = Path("data/context.db")
     export_dir: Path = Path("exports")
+    combined_export_file: str = "project_context.md"
     telegram: TelegramConfig | None = None
     markdown: MarkdownConfig = field(default_factory=MarkdownConfig)
+    google: GoogleConfig = field(default_factory=GoogleConfig)
     chats: list[ChatConfig] = field(default_factory=list)
 
 
@@ -74,6 +85,7 @@ def load_config(config_path: str | Path) -> AppConfig:
 
     telegram_raw = raw.get("telegram", {}) or {}
     markdown_raw = raw.get("markdown", {}) or {}
+    google_raw = raw.get("google", {}) or {}
 
     session_name = os.getenv("TELEGRAM_SESSION_NAME") or telegram_raw.get("session_name") or "telegram_context_sync"
 
@@ -83,6 +95,14 @@ def load_config(config_path: str | Path) -> AppConfig:
         phone=os.getenv("TELEGRAM_PHONE"),
         session_name=session_name,
         request_limit=int(telegram_raw.get("request_limit", 1000)),
+    )
+
+    google = GoogleConfig(
+        enabled=bool(google_raw.get("enabled", False)),
+        credentials_path=Path(google_raw.get("credentials_path", "credentials/client_secret.json")),
+        token_path=Path(google_raw.get("token_path", "token.json")),
+        document_id=str(google_raw.get("document_id") or "").strip() or None,
+        document_title=str(google_raw.get("document_title", "Telegram Context Sync - Project Context")),
     )
 
     chats = [
@@ -99,11 +119,13 @@ def load_config(config_path: str | Path) -> AppConfig:
         timezone=str(raw.get("timezone", "America/New_York")),
         database_path=Path(raw.get("database_path", "data/context.db")),
         export_dir=Path(raw.get("export_dir", "exports")),
+        combined_export_file=str(raw.get("combined_export_file", "project_context.md")),
         telegram=telegram,
         markdown=MarkdownConfig(
             max_messages_per_file=int(markdown_raw.get("max_messages_per_file", 500)),
             include_sender=bool(markdown_raw.get("include_sender", True)),
             include_source_identifier=bool(markdown_raw.get("include_source_identifier", True)),
         ),
+        google=google,
         chats=chats,
     )
