@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "telegram-context-sync"
+version = "0.1.0"
+description = "Sync selected Telegram chats into structured Markdown context files."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+  "telethon>=1.36.0",
+  "PyYAML>=6.0.1",
+  "python-dotenv>=1.0.1",
+]
+
+[project.scripts]
+telegram-context-sync = "telegram_context_sync.cli:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
