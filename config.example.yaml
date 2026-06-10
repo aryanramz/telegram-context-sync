@@ -2,6 +2,7 @@ timezone: America/New_York
 
 database_path: data/context.db
 export_dir: exports
+combined_export_file: project_context.md
 
 telegram:
   session_name: telegram_context_sync
@@ -11,6 +12,13 @@ markdown:
   max_messages_per_file: 500
   include_sender: true
   include_source_identifier: true
+
+google:
+  enabled: false
+  credentials_path: credentials/client_secret.json
+  token_path: token.json
+  document_id: ""
+  document_title: "Telegram Context Sync - Project Context"
 
 chats:
   - name: example_project_group
