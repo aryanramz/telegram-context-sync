@@ -115,28 +115,30 @@ For private groups, use a Telegram chat ID or another identifier Telethon can re
 
 ## Usage
 
+Global options must go before the command.
+
 Initialize the database:
 
 ```bash
-python -m telegram_context_sync.cli init-db --config config.yaml
+python -m telegram_context_sync.cli --config config.yaml init-db
 ```
 
 Sync configured chats:
 
 ```bash
-python -m telegram_context_sync.cli sync --config config.yaml
+python -m telegram_context_sync.cli --config config.yaml sync
 ```
 
 Export Markdown files:
 
 ```bash
-python -m telegram_context_sync.cli export --config config.yaml
+python -m telegram_context_sync.cli --config config.yaml export
 ```
 
 Run sync and export together:
 
 ```bash
-python -m telegram_context_sync.cli run --config config.yaml
+python -m telegram_context_sync.cli --config config.yaml run
 ```
 
 Generated Markdown files go into `exports/` by default. These are ignored by Git because they may contain private chat content.
