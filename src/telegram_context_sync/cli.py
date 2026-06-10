@@ -8,7 +8,8 @@ from pathlib import Path
 from .config import load_config
 from .database import init_db
 from .dialogs import list_dialogs
-from .exporter import export_all
+from .exporter import export_all, export_combined
+from .google_docs import update_google_doc
 from .sync import sync_all
 
 
@@ -35,7 +36,10 @@ def build_parser() -> argparse.ArgumentParser:
     subparsers.add_parser("init-db", help="Create or update the local SQLite schema")
     subparsers.add_parser("sync", help="Sync enabled Telegram chats into SQLite")
     subparsers.add_parser("export", help="Export configured chats from SQLite to Markdown")
-    subparsers.add_parser("run", help="Run sync, then export")
+    subparsers.add_parser("combined-export", help="Export all configured chats into one Markdown file")
+    subparsers.add_parser("upload-google-doc", help="Update the configured Google Doc from the combined Markdown export")
+    subparsers.add_parser("run", help="Run sync, then export individual and combined Markdown files")
+    subparsers.add_parser("run-and-upload", help="Run sync, export combined Markdown, then update the configured Google Doc")
 
     list_chats_parser = subparsers.add_parser("list-chats", help="List Telegram chats visible to the logged-in account")
     list_chats_parser.add_argument("--limit", type=int, default=100, help="Maximum number of dialogs to list")
@@ -65,11 +69,32 @@ def main() -> None:
             print(f"Exported: {path}")
         return
 
+    if args.command == "combined-export":
+        path = export_combined(config)
+        print(f"Exported combined context: {path}")
+        return
+
+    if args.command == "upload-google-doc":
+        path = export_combined(config)
+        document_id = update_google_doc(config, path)
+        print(f"Updated Google Doc: {document_id}")
+        return
+
     if args.command == "run":
         asyncio.run(sync_all(config))
         exported = export_all(config)
         for path in exported:
             print(f"Exported: {path}")
+        combined_path = export_combined(config)
+        print(f"Exported combined context: {combined_path}")
+        return
+
+    if args.command == "run-and-upload":
+        asyncio.run(sync_all(config))
+        path = export_combined(config)
+        print(f"Exported combined context: {path}")
+        document_id = update_google_doc(config, path)
+        print(f"Updated Google Doc: {document_id}")
         return
 
     if args.command == "list-chats":
