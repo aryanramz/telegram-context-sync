@@ -7,6 +7,7 @@ from pathlib import Path
 
 from .config import load_config
 from .database import init_db
+from .dialogs import list_dialogs
 from .exporter import export_all
 from .sync import sync_all
 
@@ -35,6 +36,10 @@ def build_parser() -> argparse.ArgumentParser:
     subparsers.add_parser("sync", help="Sync enabled Telegram chats into SQLite")
     subparsers.add_parser("export", help="Export configured chats from SQLite to Markdown")
     subparsers.add_parser("run", help="Run sync, then export")
+
+    list_chats_parser = subparsers.add_parser("list-chats", help="List Telegram chats visible to the logged-in account")
+    list_chats_parser.add_argument("--limit", type=int, default=100, help="Maximum number of dialogs to list")
+
     return parser
 
 
@@ -65,6 +70,10 @@ def main() -> None:
         exported = export_all(config)
         for path in exported:
             print(f"Exported: {path}")
+        return
+
+    if args.command == "list-chats":
+        asyncio.run(list_dialogs(config, limit=args.limit))
         return
 
     parser.error(f"Unknown command: {args.command}")
