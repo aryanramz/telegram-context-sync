@@ -25,6 +25,13 @@ env/
 *.session
 *.session-journal
 
+# Google OAuth credentials / tokens
+credentials/
+client_secret*.json
+google_credentials*.json
+token.json
+.google_token.json
+
 # Local config
 config.yaml
 config.local.yaml
