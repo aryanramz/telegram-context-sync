@@ -1,0 +1,97 @@
+from __future__ import annotations
+
+from dataclasses import dataclass, field
+from pathlib import Path
+import os
+from typing import Any
+
+from dotenv import load_dotenv
+import yaml
+
+
+@dataclass(frozen=True)
+class ChatConfig:
+    name: str
+    identifier: str | int
+    enabled: bool = True
+    export_file: str | None = None
+
+
+@dataclass(frozen=True)
+class TelegramConfig:
+    api_id: int
+    api_hash: str
+    phone: str | None
+    session_name: str = "telegram_context_sync"
+    request_limit: int = 1000
+
+
+@dataclass(frozen=True)
+class MarkdownConfig:
+    max_messages_per_file: int = 500
+    include_sender: bool = True
+    include_source_identifier: bool = True
+
+
+@dataclass(frozen=True)
+class AppConfig:
+    timezone: str = "America/New_York"
+    database_path: Path = Path("data/context.db")
+    export_dir: Path = Path("exports")
+    telegram: TelegramConfig | None = None
+    markdown: MarkdownConfig = field(default_factory=MarkdownConfig)
+    chats: list[ChatConfig] = field(default_factory=list)
+
+
+def _require_env(name: str) -> str:
+    value = os.getenv(name)
+    if not value:
+        raise RuntimeError(f"Missing required environment variable: {name}")
+    return value
+
+
+def load_config(config_path: str | Path) -> AppConfig:
+    """Load YAML config and Telegram credentials from environment variables."""
+    load_dotenv()
+
+    path = Path(config_path)
+    if not path.exists():
+        raise FileNotFoundError(f"Config file not found: {path}")
+
+    raw: dict[str, Any] = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+
+    telegram_raw = raw.get("telegram", {}) or {}
+    markdown_raw = raw.get("markdown", {}) or {}
+
+    session_name = os.getenv("TELEGRAM_SESSION_NAME") or telegram_raw.get("session_name") or "telegram_context_sync"
+
+    telegram = TelegramConfig(
+        api_id=int(_require_env("TELEGRAM_API_ID")),
+        api_hash=_require_env("TELEGRAM_API_HASH"),
+        phone=os.getenv("TELEGRAM_PHONE"),
+        session_name=session_name,
+        request_limit=int(telegram_raw.get("request_limit", 1000)),
+    )
+
+    chats = [
+        ChatConfig(
+            name=str(item["name"]),
+            identifier=item["identifier"],
+            enabled=bool(item.get("enabled", True)),
+            export_file=item.get("export_file"),
+        )
+        for item in raw.get("chats", [])
+    ]
+
+    return AppConfig(
+        timezone=str(raw.get("timezone", "America/New_York")),
+        database_path=Path(raw.get("database_path", "data/context.db")),
+        export_dir=Path(raw.get("export_dir", "exports")),
+        telegram=telegram,
+        markdown=MarkdownConfig(
+            max_messages_per_file=int(markdown_raw.get("max_messages_per_file", 500)),
+            include_sender=bool(markdown_raw.get("include_sender", True)),
+            include_source_identifier=bool(markdown_raw.get("include_source_identifier", True)),
+        ),
+        chats=chats,
+    )
