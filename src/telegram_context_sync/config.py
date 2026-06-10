@@ -50,6 +50,18 @@ def _require_env(name: str) -> str:
     return value
 
 
+def _normalize_identifier(value: str | int) -> str | int:
+    """Convert quoted numeric Telegram peer IDs from YAML into integers."""
+    if isinstance(value, int):
+        return value
+    if isinstance(value, str):
+        stripped = value.strip()
+        if stripped.lstrip("-").isdigit():
+            return int(stripped)
+        return stripped
+    return value
+
+
 def load_config(config_path: str | Path) -> AppConfig:
     """Load YAML config and Telegram credentials from environment variables."""
     load_dotenv()
@@ -76,7 +88,7 @@ def load_config(config_path: str | Path) -> AppConfig:
     chats = [
         ChatConfig(
             name=str(item["name"]),
-            identifier=item["identifier"],
+            identifier=_normalize_identifier(item["identifier"]),
             enabled=bool(item.get("enabled", True)),
             export_file=item.get("export_file"),
         )
