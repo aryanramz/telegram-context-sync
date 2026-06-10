@@ -1,0 +1,57 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+dist/
+build/
+*.egg-info/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Environment/secrets
+.env
+.env.*
+!.env.example
+
+# Telegram sessions - credential material
+*.session
+*.session-journal
+
+# Local config
+config.yaml
+config.local.yaml
+
+# Local data / private sync output
+data/
+*.db
+*.sqlite
+*.sqlite3
+
+# Generated exports may contain private chat logs
+exports/*
+!exports/.gitkeep
+
+# Raw exports / private logs
+raw_exports/
+*.json
+*.jsonl
+*.csv
+*.zip
+
+# Logs
+logs/
+*.log
+
+# OS/editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
